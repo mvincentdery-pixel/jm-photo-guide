@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Guide Photo JM">
+<meta name="theme-color" content="#CC0000">
+<title>Guide Photo — Joliette Mitsubishi</title>
+<script src="https://accounts.google.com/gsi/client" async></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100%;background:#F3F4F6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#111827}
+.app{max-width:440px;margin:0 auto;min-height:100vh;background:#fff}
+button{cursor:pointer;font-family:inherit}
+.brand{display:inline-flex;align-items:center;gap:8px;background:#CC0000;color:#fff;padding:9px 22px;border-radius:8px}
+.brand-b{font-size:17px;font-weight:800;letter-spacing:1px}
+.brand-l{font-size:17px;font-weight:300}
+input[type=text]{width:100%;font-size:26px;font-family:monospace;font-weight:800;letter-spacing:3px;text-transform:uppercase;padding:14px 16px;border-radius:10px;border:2px solid #E5E7EB;background:#fff;color:#111827;outline:none;transition:border 0.15s}
+input[type=text]:focus{border-color:#CC0000}
+.btn-primary{width:100%;padding:17px;background:#CC0000;color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;transition:opacity 0.15s}
+.btn-primary:disabled{background:#E5E7EB;color:#9CA3AF;cursor:default}
+.btn-camera{width:100%;padding:20px;background:#CC0000;color:#fff;border:none;border-radius:12px;font-size:18px;font-weight:800;cursor:pointer}
+.btn-camera:disabled{background:#E5E7EB;color:#9CA3AF;cursor:default}
+.btn-skip{width:100%;padding:14px;background:transparent;color:#6B7280;border:1px solid #E5E7EB;border-radius:10px;font-size:14px;cursor:pointer}
+.btn-type{padding:13px 8px;border-radius:8px;width:100%;cursor:pointer;font-size:14px;transition:all 0.15s}
+.btn-type.on{background:#FFF0F0;color:#CC0000;border:2px solid #CC0000;font-weight:700}
+.btn-type.off{background:#fff;color:#6B7280;border:1px solid #E5E7EB;font-weight:400}
+.btn-google{width:100%;padding:14px 16px;background:#fff;border:1.5px solid #E5E7EB;border-radius:10px;font-size:15px;font-weight:600;color:#374151;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;transition:all 0.15s}
+.btn-google:hover{border-color:#CC0000}
+.topbar{padding:12px 16px;border-bottom:1px solid #F3F4F6;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:10}
+.progress-rail{height:4px;background:#F3F4F6}
+.progress-fill{height:100%;background:#CC0000;transition:width 0.35s ease}
+.cat-badge{display:inline-block;padding:4px 12px;border-radius:6px;font-size:11px;font-weight:800;letter-spacing:0.8px}
+.alert-box{background:#FFFBEB;border:1px solid #FCD34D;border-radius:8px;padding:10px 14px;font-size:13px;color:#92400E;font-weight:600}
+.ok-box{background:#F0FDF4;border:1px solid #86EFAC;border-radius:8px;padding:9px 14px;font-size:13px;color:#14532D;font-weight:500;word-break:break-all}
+.err-box{background:#FEF2F2;border:1px solid #FCA5A5;border-radius:8px;padding:10px 14px;font-size:13px;color:#DC2626;font-weight:500;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.upload-box{background:#EFF6FF;border:1px solid #93C5FD;border-radius:8px;padding:10px 14px;font-size:13px;color:#1E40AF;font-weight:500;display:flex;align-items:center;gap:10px}
+.dot{width:22px;height:22px;border-radius:4px;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.step-row{display:flex;gap:10px;margin-bottom:10px;align-items:flex-start}
+.step-num{min-width:24px;height:24px;border-radius:50%;background:#CC0000;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.sec-label{font-size:11px;font-weight:700;color:#6B7280;letter-spacing:0.8px;margin-bottom:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{width:16px;height:16px;border:2px solid #93C5FD;border-top-color:#1D4ED8;border-radius:50%;animation:spin 0.7s linear infinite;flex-shrink:0}
+code{font-size:12px;background:#F3F4F6;padding:2px 6px;border-radius:4px;font-family:monospace}
+</style>
+</head>
+<body>
+<div class="app" id="root"></div>
+<script>
+/* ═══════════════════════════════════
+   CONFIGURATION
+   Remplacer CLIENT_ID avant de déployer
+═══════════════════════════════════ */
+const CLIENT_ID   = 'VOTRE_CLIENT_ID.apps.googleusercontent.com';
+const ROOT_FOLDER = 'Inventaire JM';
+
+/* ═══════════════════════════════════
+   PHOTOS — AutoTrader.ca
+═══════════════════════════════════ */
+const PHOTOS = [
+  {id:1,  cat:'EXT', name:'Avant \u00BE gauche',           desc:'Angle 45\u00B0 \u00B7 C\u00F4t\u00E9 conducteur \u00B7 Hauteur \u00E9paule \u00B7 Soleil dans le dos',angle:'FL',star:true},
+  {id:2,  cat:'EXT', name:'Profil complet gauche',        desc:'Vue lat\u00E9rale compl\u00E8te \u00B7 C\u00F4t\u00E9 conducteur \u00B7 Reculer pour tout voir',       angle:'L'},
+  {id:3,  cat:'EXT', name:'Arri\u00E8re \u00BE gauche',           desc:'Angle 45\u00B0 arri\u00E8re \u00B7 C\u00F4t\u00E9 conducteur',                                 angle:'RL'},
+  {id:4,  cat:'EXT', name:'Arri\u00E8re \u00BE droite',           desc:'Angle 45\u00B0 arri\u00E8re \u00B7 C\u00F4t\u00E9 passager',                                  angle:'RR'},
+  {id:5,  cat:'EXT', name:'Profil complet droite',        desc:'Vue lat\u00E9rale compl\u00E8te \u00B7 C\u00F4t\u00E9 passager \u00B7 Reculer pour tout voir',        angle:'R'},
+  {id:6,  cat:'EXT', name:'Avant \u00BE droite',                  desc:'Angle 45\u00B0 avant \u00B7 C\u00F4t\u00E9 passager',                                         angle:'FR'},
+  {id:7,  cat:'EXT', name:'Face avant',                   desc:'Directement devant le v\u00E9hicule \u00B7 Centr\u00E9',                                               angle:'F'},
+  {id:8,  cat:'EXT', name:'Face arri\u00E8re',                    desc:'Directement derri\u00E8re le v\u00E9hicule \u00B7 Centr\u00E9',                                angle:'B'},
+  {id:9,  cat:'EXT', name:'Roue avant \u2014 gros plan',  desc:'Jante propre \u00B7 C\u00F4t\u00E9 conducteur',                                                       angle:'W'},
+  {id:10, cat:'INT', name:'Tableau de bord complet',      desc:'Depuis banquette arri\u00E8re \u00B7 Grand angle \u00B7 Toutes portes ferm\u00E9es'},
+  {id:11, cat:'INT', name:'Si\u00E8ges avant \u2014 conducteur',  desc:'Porte conducteur grande ouverte \u00B7 Face aux si\u00E8ges \u00B7 Cadre de porte visible'},
+  {id:12, cat:'INT', name:'Si\u00E8ges avant \u2014 passager',    desc:'Porte passager grande ouverte \u00B7 Face aux si\u00E8ges \u00B7 Cadre de porte visible'},
+  {id:13, cat:'INT', name:'Banquette arri\u00E8re',               desc:'Porte arri\u00E8re grande ouverte \u00B7 Vue espace passager'},
+  {id:14, cat:'INT', name:'Combin\u00E9 instruments',      desc:'Kilom\u00E9trage visible \u00B7 Aucun voyant allum\u00E9 \u00B7 Toutes portes ferm\u00E9es',alert:true},
+  {id:15, cat:'INT', name:'Contr\u00F4les climatisation',  desc:'Gros plan sur les commandes de climate et ventilation'},
+  {id:16, cat:'INT', name:'Console centrale',             desc:'Levier de vitesse \u00B7 Frein \u00E0 main \u00B7 USB \u00B7 Porte-gobelet'},
+  {id:17, cat:'INT', name:'\u00C9cran central \u2014 allum\u00E9',desc:'Navigation ou \u00E9cran d\u2019accueil \u00B7 V\u00E9hicule allum\u00E9 requis'},
+  {id:18, cat:'INT', name:'Volant + commandes',           desc:'Face au volant \u00B7 Boutons \u00B7 Palette de vitesse si \u00E9quip\u00E9'},
+  {id:19, cat:'EXTRA',name:'Coffre / espace cargo',       desc:'Hayon ou coffre grand ouvert \u00B7 Vue compl\u00E8te de l\u2019espace'},
+  {id:20, cat:'EXTRA',name:'Compartiment moteur',         desc:'Capot grand ouvert \u00B7 Vue du moteur propre'},
+  {id:21, cat:'EXTRA',name:'Caract\u00E9ristiques sp\u00E9ciales',desc:'Si\u00E8ges chauffants \u00B7 Toit ouvrant \u00B7 Syst\u00E8me audio \u00B7 4x4 \u00B7 etc.',optional:true},
+];
+const TRUCK_EXTRA = [
+  {id:22, cat:'EXTRA',name:'Bo\u00EEte de camion',        desc:'Hayon abaiss\u00E9 \u00B7 Vue int\u00E9rieure de la bo\u00EEte'},
+  {id:23, cat:'EXTRA',name:'Attelage remorque',          desc:'Si \u00E9quip\u00E9 \u00B7 Bille d\u2019attelage visible',optional:true},
+];
+const CAT = {
+  EXT:  {label:'EXT\u00C9RIEUR',bg:'#FEF2F2',color:'#991B1B'},
+  INT:  {label:'INT\u00C9RIEUR',bg:'#EFF6FF',color:'#1E3A8A'},
+  EXTRA:{label:'EXTRAS',       bg:'#F0FDF4',color:'#14532D'},
+};
+const CAM_POS = {FL:[15,13],L:[4,70],RL:[15,127],RR:[125,127],R:[136,70],FR:[125,13],F:[70,4],B:[70,136],W:[14,32]};
+
+/* ═══════════════════════════════════
+   ÉTAT
+═══════════════════════════════════ */
+let S={screen:'welcome',stock:'',vtype:'auto',idx:0,taken:{},connected:false,uploading:false,uploadMsg:'',uploadErr:false};
+let accessToken=null,tokenClient=null,rootFolderId=null,folderCache={};
+
+/* ═══════════════════════════════════
+   GOOGLE AUTH
+═══════════════════════════════════ */
+function connectGoogle(){
+  if(typeof google==='undefined'){alert('Chargement en cours, r\u00E9essayer dans 2 secondes.');return;}
+  if(!tokenClient){
+    tokenClient=google.accounts.oauth2.initTokenClient({
+      client_id:CLIENT_ID,
+      scope:'https://www.googleapis.com/auth/drive.file',
+      callback:(resp)=>{
+        if(resp.error){S.uploadErr=true;S.uploadMsg='Connexion \u00E9chou\u00E9e : '+resp.error;render();return;}
+        accessToken=resp.access_token;
+        S.connected=true;S.uploadErr=false;render();
+      }
+    });
+  }
+  tokenClient.requestAccessToken({prompt:''});
+}
+
+/* ═══════════════════════════════════
+   DRIVE API
+═══════════════════════════════════ */
+async function dGet(url){
+  const r=await fetch(url,{headers:{Authorization:'Bearer '+accessToken}});
+  if(r.status===401){accessToken=null;S.connected=false;throw new Error('expired');}
+  return r.json();
+}
+async function dPost(url,body){
+  const r=await fetch(url,{method:'POST',headers:{Authorization:'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(r.status===401){accessToken=null;S.connected=false;throw new Error('expired');}
+  return r.json();
+}
+async function findF(name,pid){
+  const q=`name='${name}' and mimeType='application/vnd.google-apps.folder' and '${pid}' in parents and trashed=false`;
+  const d=await dGet('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id)');
+  return d.files?.[0]?.id||null;
+}
+async function mkDir(name,pid){
+  const d=await dPost('https://www.googleapis.com/drive/v3/files',{name,mimeType:'application/vnd.google-apps.folder',parents:[pid||'root']});
+  return d.id;
+}
+async function stockFolder(stock){
+  if(folderCache[stock])return folderCache[stock];
+  if(!rootFolderId){
+    const q=`name='${ROOT_FOLDER}' and mimeType='application/vnd.google-apps.folder' and 'root' in parents and trashed=false`;
+    const d=await dGet('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&fields=files(id)');
+    rootFolderId=d.files?.[0]?.id||await mkDir(ROOT_FOLDER,null);
+  }
+  let id=await findF(stock,rootFolderId);
+  if(!id)id=await mkDir(stock,rootFolderId);
+  folderCache[stock]=id;return id;
+}
+async function upload(file,stock,photo){
+  const fid=await stockFolder(stock);
+  const n=String(photo.id).padStart(2,'0');
+  const slug=photo.name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,'-').replace(/[^\w-]/g,'');
+  const fname=stock+'_'+n+'_'+slug+'.jpg';
+  const meta=JSON.stringify({name:fname,parents:[fid]});
+  const form=new FormData();
+  form.append('metadata',new Blob([meta],{type:'application/json'}));
+  form.append('file',file,fname);
+  const r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name',{method:'POST',headers:{Authorization:'Bearer '+accessToken},body:form});
+  if(r.status===401){accessToken=null;S.connected=false;throw new Error('expired');}
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  return fname;
+}
+
+/* ═══════════════════════════════════
+   HANDLER
+═══════════════════════════════════ */
+async function handleFile(e){
+  const file=e.target.files[0];if(!file)return;e.target.value='';
+  const list=photos(),p=list[S.idx];
+  S.uploading=true;S.uploadMsg='Envoi vers Google Drive\u2026';S.uploadErr=false;render();
+  try{
+    const fname=await upload(file,S.stock,p);
+    S.taken[p.id]=fname;S.uploading=false;S.uploadMsg='\u2713 '+fname;
+    if(S.idx<list.length-1)S.idx++;else S.screen='done';
+    render();
+  }catch(err){
+    S.uploading=false;S.uploadErr=true;
+    S.uploadMsg=err.message==='expired'?'Session expir\u00E9e \u2014 Reconnecter Google Drive':'Erreur d\u2019envoi \u2014 v\u00E9rifier la connexion';
+    render();
+  }
+}
+
+/* ═══════════════════════════════════
+   SVG
+═══════════════════════════════════ */
+function carSVG(angle){
+  const pos=CAM_POS[angle];if(!pos)return'';const[cx,cy]=pos;
+  return'<svg viewBox="0 0 140 140" width="116" height="116" style="display:block;margin:0 auto">'+
+    '<text x="70" y="13" text-anchor="middle" font-size="8" fill="#9CA3AF" letter-spacing="1" font-family="monospace">AVANT</text>'+
+    '<text x="70" y="138" text-anchor="middle" font-size="8" fill="#9CA3AF" letter-spacing="1" font-family="monospace">ARRI\u00C8RE</text>'+
+    '<rect x="34" y="18" width="72" height="104" rx="10" fill="#E5E7EB" stroke="#D1D5DB" stroke-width="1.5"/>'+
+    '<rect x="42" y="20" width="56" height="22" rx="4" fill="#D1D5DB"/>'+
+    '<rect x="42" y="40" width="56" height="16" rx="3" fill="#BFDBFE" opacity="0.9"/>'+
+    '<rect x="42" y="54" width="56" height="24" rx="2" fill="#CBD5E1"/>'+
+    '<rect x="42" y="76" width="56" height="16" rx="3" fill="#BFDBFE" opacity="0.9"/>'+
+    '<rect x="42" y="90" width="56" height="24" rx="4" fill="#D1D5DB"/>'+
+    '<rect x="24" y="27" width="12" height="19" rx="4" fill="#374151"/>'+
+    '<rect x="104" y="27" width="12" height="19" rx="4" fill="#374151"/>'+
+    '<rect x="24" y="94" width="12" height="19" rx="4" fill="#374151"/>'+
+    '<rect x="104" y="94" width="12" height="19" rx="4" fill="#374151"/>'+
+    '<line x1="'+cx+'" y1="'+cy+'" x2="70" y2="70" stroke="#CC0000" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.4"/>'+
+    '<circle cx="'+cx+'" cy="'+cy+'" r="9" fill="#CC0000"/>'+
+    '<circle cx="'+cx+'" cy="'+cy+'" r="5" fill="white" opacity="0.9"/>'+
+    '<circle cx="'+cx+'" cy="'+cy+'" r="2.5" fill="#CC0000"/></svg>';
+}
+function gSVG(){return'<svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.47 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>';}
+
+/* ═══════════════════════════════════
+   RENDER
+═══════════════════════════════════ */
+function photos(){return S.vtype==='camion'?[...PHOTOS,...TRUCK_EXTRA]:PHOTOS;}
+
+function render(){
+  const root=document.getElementById('root');
+  const list=photos(),total=list.length,takenN=Object.keys(S.taken).length;
+
+  if(S.screen==='welcome'){
+    const tc=S.vtype==='camion'?PHOTOS.length+TRUCK_EXTRA.length:PHOTOS.length;
+    root.innerHTML=`
+<div style="padding:32px 20px 24px;text-align:center">
+  <div class="brand" style="margin-bottom:16px"><span class="brand-b">JOLIETTE</span><span class="brand-l">MITSUBISHI</span></div>
+  <p style="font-size:20px;font-weight:600;margin-bottom:4px">Guide photo \u2014 v\u00E9hicule</p>
+  <p style="font-size:13px;color:#6B7280">${tc} photos \u00B7 Standards AutoTrader.ca</p>
+</div>
+<div style="padding:0 20px 20px">
+  <p class="sec-label">NUM\u00C9RO DE STOCK</p>
+  <input type="text" id="si" placeholder="ex\u00A0: V2632" maxlength="10" value="${S.stock}" autocomplete="off" autocorrect="off" spellcheck="false">
+</div>
+<div style="padding:0 20px 20px">
+  <p class="sec-label">TYPE DE V\u00C9HICULE</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+    <button class="btn-type ${S.vtype==='auto'?'on':'off'}" onclick="setV('auto')">Voiture</button>
+    <button class="btn-type ${S.vtype==='suv'?'on':'off'}" onclick="setV('suv')">VUS</button>
+    <button class="btn-type ${S.vtype==='camion'?'on':'off'}" onclick="setV('camion')">Camion</button>
+  </div>
+</div>
+<div style="padding:0 20px 20px">
+  <p class="sec-label">GOOGLE DRIVE</p>
+  ${S.connected
+    ?`<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:#F0FDF4;border:1px solid #86EFAC;border-radius:10px">
+        <div style="width:10px;height:10px;border-radius:50%;background:#16A34A;flex-shrink:0"></div>
+        <p style="font-size:14px;color:#14532D;font-weight:600;flex:1">Connect\u00E9 \u2014 pr\u00EAt \u00E0 uploader</p>
+        <button onclick="connectGoogle()" style="font-size:12px;color:#6B7280;background:none;border:none;cursor:pointer">Changer</button>
+      </div>`
+    :`<button class="btn-google" onclick="connectGoogle()">${gSVG()}<span>Connecter Google Drive</span></button>
+      <p style="font-size:12px;color:#9CA3AF;margin-top:8px;text-align:center">Connexion requise pour l\u2019upload automatique</p>`
+  }
+</div>
+<div style="padding:0 20px 12px">
+  <button class="btn-primary" id="sb" onclick="go()" ${(S.stock.trim().length<2||!S.connected)?'disabled':''}>Commencer la s\u00E9ance</button>
+</div>
+<p style="text-align:center;font-size:12px;color:#9CA3AF;padding-bottom:32px">Upload direct vers Google Drive / Inventaire JM</p>`;
+    const inp=document.getElementById('si');
+    inp.addEventListener('input',e=>{S.stock=e.target.value.toUpperCase();e.target.value=S.stock;document.getElementById('sb').disabled=S.stock.trim().length<2||!S.connected;});
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter')go();});
+    return;
+  }
+
+  if(S.screen==='done'){
+    const missed=list.filter(p=>!S.taken[p.id]&&!p.optional);
+    const ok=missed.length===0;
+    root.innerHTML=`
+<div style="padding:32px 20px 20px;text-align:center">
+  <div style="width:64px;height:64px;border-radius:50%;background:${ok?'#16A34A':'#D97706'};color:#fff;font-size:28px;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 14px">${ok?'\u2713':'!'}</div>
+  <p style="font-size:20px;font-weight:600;margin-bottom:4px">${ok?'S\u00E9ance compl\u00E8te !':'S\u00E9ance termin\u00E9e'}</p>
+  <p style="font-size:14px;color:#6B7280">Stock <strong>${S.stock}</strong> \u00B7 ${takenN}/${total} photos upload\u00E9es</p>
+</div>
+<div style="background:#F0FDF4;border:1px solid #86EFAC;border-radius:10px;margin:0 20px 20px;padding:14px;display:flex;align-items:flex-start;gap:10px">
+  <div style="width:10px;height:10px;border-radius:50%;background:#16A34A;flex-shrink:0;margin-top:3px"></div>
+  <div><p style="font-size:13px;font-weight:700;color:#14532D;margin-bottom:3px">Google Drive \u2014 ${ROOT_FOLDER} / ${S.stock}</p>
+  <p style="font-size:12px;color:#166534">${takenN} fichier${takenN>1?'s':''} d\u00E9pos\u00E9${takenN>1?'s':''} automatiquement</p></div>
+</div>
+${missed.length?`<div style="background:#FFFBEB;border:1px solid #FCD34D;border-radius:10px;margin:0 20px 20px;padding:14px">
+  <p class="sec-label" style="color:#92400E;margin-bottom:8px">PHOTOS MANQUANTES</p>
+  ${missed.map(p=>`<p style="font-size:13px;color:#B45309;margin:5px 0">#${p.id} \u2014 ${p.name}</p>`).join('')}
+</div>`:''}
+<div style="background:#F9FAFB;margin:0 20px 24px;border-radius:12px;padding:18px">
+  <p class="sec-label" style="margin-bottom:14px">PROCHAINES \u00C9TAPES</p>
+  <div class="step-row"><div class="step-num">1</div><p style="font-size:13px;line-height:1.55">V\u00E9rifier les photos dans Google Drive \u2192 <strong>${ROOT_FOLDER} / ${S.stock}</strong></p></div>
+  <div class="step-row"><div class="step-num">2</div><p style="font-size:13px;line-height:1.55">Make.com retire le fond (Remove.bg) et ajoute le logo JM automatiquement</p></div>
+  <div class="step-row"><div class="step-num">3</div><p style="font-size:13px;line-height:1.55">Photos finales pr\u00EAtes pour AutoTrader \u00B7 Kijiji \u00B7 Site web</p></div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 20px 32px">
+  <button onclick="reset()" style="padding:14px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;font-size:14px;cursor:pointer;color:#374151;font-weight:500">Nouveau v\u00E9hicule</button>
+  <button onclick="completeRem()" style="padding:14px;border-radius:8px;background:#CC0000;color:#fff;border:none;font-size:14px;font-weight:700;cursor:pointer">Compl\u00E9ter</button>
+</div>`;
+    return;
+  }
+
+  const p=list[S.idx],cat=CAT[p.cat],pct=Math.round((S.idx/total)*100),isTaken=!!S.taken[p.id];
+  root.innerHTML=`
+<div class="topbar">
+  <button onclick="prev()" ${S.idx===0||S.uploading?'disabled':''} style="padding:8px 12px;background:none;border:1px solid #E5E7EB;border-radius:6px;color:#6B7280;font-size:13px;opacity:${S.idx===0?'0.3':'1'}">&#8592; Pr\u00E9c.</button>
+  <div style="text-align:center">
+    <p style="font-size:11px;color:#6B7280;font-family:monospace;letter-spacing:1px;margin-bottom:2px">${S.stock}</p>
+    <p style="font-size:15px;font-weight:700">${S.idx+1} <span style="color:#9CA3AF;font-weight:400">/ ${total}</span></p>
+  </div>
+  <button onclick="S.screen='done';render()" ${S.uploading?'disabled':''} style="padding:8px 12px;background:none;border:1px solid #E5E7EB;border-radius:6px;color:#6B7280;font-size:13px">Terminer</button>
+</div>
+<div class="progress-rail"><div class="progress-fill" style="width:${pct}%"></div></div>
+<div style="padding:18px 20px 6px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+  <span class="cat-badge" style="background:${cat.bg};color:${cat.color}">${cat.label}</span>
+  ${p.star?'<span style="color:#CC0000;font-size:11px;font-weight:700;letter-spacing:0.5px">PHOTO PRINCIPALE</span>':''}
+  ${p.optional?'<span style="font-size:11px;color:#9CA3AF">(optionnel)</span>':''}
+</div>
+<div style="padding:8px 20px 6px">
+  <p style="font-size:22px;font-weight:600;line-height:1.25;color:#111827">${p.name}</p>
+</div>
+${p.alert?`<div class="alert-box" style="margin:8px 20px 10px">ATTENTION \u2014 Kilom\u00E9trage visible \u00B7 Aucun voyant allum\u00E9</div>`:''}
+${p.angle?`<div style="background:#F9FAFB;margin:8px 20px 12px;border-radius:12px;padding:14px 8px 8px">${carSVG(p.angle)}<p style="text-align:center;font-size:10px;color:#9CA3AF;margin-top:6px;letter-spacing:0.8px">POSITION DU PHOTOGRAPHE</p></div>`:'<div style="height:8px"></div>'}
+<div style="padding:0 20px 14px">
+  <p style="font-size:15px;color:#4B5563;line-height:1.65">${p.desc}</p>
+</div>
+${S.uploading
+  ?`<div class="upload-box" style="margin:0 20px 12px"><div class="spinner"></div><span>${S.uploadMsg}</span></div>`
+  :S.uploadErr
+    ?`<div class="err-box" style="margin:0 20px 12px"><span>${S.uploadMsg}</span><button onclick="connectGoogle()" style="padding:8px 14px;background:transparent;border:1px solid #FCA5A5;border-radius:6px;color:#DC2626;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">Reconnecter</button></div>`
+    :isTaken
+      ?`<div class="ok-box" style="margin:0 20px 12px">${S.taken[p.id]}</div>`
+      :''}
+<div style="padding:4px 20px 14px">
+  <input type="file" accept="image/*" capture="environment" id="fi" style="display:none">
+  <button class="btn-camera" onclick="document.getElementById('fi').click()" ${S.uploading?'disabled':''}>
+    ${S.uploading?'Upload en cours\u2026':'Prendre la photo'}
+  </button>
+  <div style="height:10px"></div>
+  <button class="btn-skip" onclick="skip()" ${S.uploading?'disabled':''}>${p.optional?'Passer (optionnel)':'Passer cette photo'}</button>
+</div>
+<div style="padding:2px 20px 28px;display:flex;flex-wrap:wrap;gap:4px">
+  ${list.map((ph,i)=>{
+    let bg,color;
+    if(S.taken[ph.id]){bg='#16A34A';color='#fff';}
+    else if(i===S.idx){bg='#CC0000';color='#fff';}
+    else{bg='#F3F4F6';color='#9CA3AF';}
+    return`<div class="dot" style="background:${bg};color:${color}" onclick="jump(${i})">${S.taken[ph.id]?'\u2713':ph.id}</div>`;
+  }).join('')}
+</div>`;
+  document.getElementById('fi').addEventListener('change',handleFile);
+}
+
+function setV(v){S.vtype=v;render();}
+function go(){if(S.stock.trim().length<2||!S.connected)return;S.screen='photo';S.idx=0;S.taken={};S.uploadMsg='';S.uploadErr=false;render();}
+function prev(){if(S.idx>0&&!S.uploading){S.uploadMsg='';S.uploadErr=false;S.idx--;render();}}
+function skip(){if(S.uploading)return;const l=photos();S.uploadMsg='';S.uploadErr=false;if(S.idx<l.length-1){S.idx++;render();}else{S.screen='done';render();}}
+function reset(){S={screen:'welcome',stock:'',vtype:'auto',idx:0,taken:{},connected:S.connected,uploading:false,uploadMsg:'',uploadErr:false};render();}
+function jump(i){if(!S.uploading){S.idx=i;S.uploadMsg='';S.uploadErr=false;render();}}
+function completeRem(){const i=photos().findIndex(p=>!S.taken[p.id]);if(i>=0){S.idx=i;S.screen='photo';S.uploadMsg='';S.uploadErr=false;render();}}
+render();
+</script>
+</body>
+</html>
